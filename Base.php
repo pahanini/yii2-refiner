@@ -58,7 +58,7 @@ class Base extends Object
     public function applyTo($query)
     {
         if (is_callable($this->refine) && ($params = $this->getParams())) {
-            call_user_func($this->apply, $query, $params);
+            call_user_func($this->refine, $query, $params);
         }
         return $this;
     }
