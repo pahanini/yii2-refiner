@@ -70,7 +70,7 @@ class Base extends Object
     public function getParams()
     {
         $result = Yii::$app->request->get($this->name);
-        if ($this->paramType) {
+        if ($result !== null && $this->paramType) {
             if (is_array($result)) {
                 foreach ($result as &$val) {
                     $val = settype($val, $this->paramType);

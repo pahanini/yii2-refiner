@@ -24,7 +24,6 @@ class DataProvider extends ActiveDataProvider
 
     protected function prepareModels()
     {
-        $this->getRefinerSet()->applyTo($this->query);
         if ($refinerSet = $this->getRefinerSet()) {
             $refinerSet->applyTo($this->query);
         }

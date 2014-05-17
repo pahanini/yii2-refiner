@@ -21,7 +21,7 @@ class Set extends Object
     /**
      * @var null|QueryInterface
      */
-    public $_query;
+    private $_query;
 
     /**
      * @var array
@@ -36,7 +36,7 @@ class Set extends Object
     /**
      * @var null|QueryInterface
      */
-    public $_save;
+    private $_save;
 
 
     /**
@@ -84,6 +84,7 @@ class Set extends Object
         $result = [];
         foreach ($this->getRefiners() as $key => $refiner) {
             $result[$key] = $refiner->getValue(clone $this->_save);
+
         }
         return $result;
     }
