@@ -125,15 +125,26 @@ class Base extends Object
             }
             $active = call_user_func($this->active, $query)->asArray()->all();
         }
-        $result = $this->merge($all, $active, $this->on);
-        if ($this->expand) {
-            $result = $this->expand($result, $this->expand);
-        }
-        if ($this->rename) {
-            $result = $this->rename($result, $this->rename);
-        }
-        return $result;
+        return $this->modify($all, $active);
     }
+
+	/**
+	 * Modifies array with all and active values (merges, renames columns etc..)
+	 * @param $all
+	 * @param $active
+	 * @return mixed
+	 */
+	protected function modify($all, $active)
+	{
+		$result = $this->merge($all, $active, $this->on);
+		if ($this->expand) {
+			$result = $this->expand($result, $this->expand);
+		}
+		if ($this->rename) {
+			$result = $this->rename($result, $this->rename);
+		}
+		return $result;
+	}
 
     /**
      * Merges two arrays using specified values
