@@ -93,11 +93,11 @@ class Base extends Object
         $result = Yii::$app->request->get($this->name);
         if ($result !== null && $this->paramType) {
             if (is_array($result)) {
-                foreach ($result as &$val) {
-                    $val = settype($val, $this->paramType);
+                foreach ($result as $key => $val) {
+                    settype($result[$key], $this->paramType);
                 }
             } else {
-                $result = settype($result, $this->paramType);
+                settype($result, $this->paramType);
             }
         }
         return $result;
