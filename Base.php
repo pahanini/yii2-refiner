@@ -20,11 +20,10 @@ class Base extends Object
      */
     public $active;
 
-
     /**
-     * @var null|array Rules to modify final result
+     * @var null|array Rules to expand
      */
-    public $modify;
+    public $expand;
 
     /**
      * @var string Name of refiner
@@ -47,6 +46,11 @@ class Base extends Object
     public $refine;
 
     /**
+     * @var null|array Rules to rename columns of final result
+     */
+    public $rename;
+
+    /**
      * @var \pahanini\refiner\Set
      */
     public $set;
@@ -62,6 +66,23 @@ class Base extends Object
         }
         return $this;
     }
+
+    /**
+     * Renames or deleted values of array
+     */
+    protected function expand($array, $rules)
+    {
+        foreach ($array as $key => $value) {
+            foreach ($rules as $rule) {
+                if (array_key_exists($rule, $value) && is_array($value[$rule])) {
+                    $array[$key] = array_merge($array[$key], $value[$rule]);
+                    unset($array[$key][$rule]);
+                }
+            }
+        }
+        return $array;
+    }
+
 
     /**
      * Returns get params
@@ -105,8 +126,11 @@ class Base extends Object
             $active = call_user_func($this->active, $query)->asArray()->all();
         }
         $result = $this->merge($all, $active, $this->on);
-        if ($this->modify) {
-            $result = $this->modify($result, $this->modify);
+        if ($this->expand) {
+            $result = $this->expand($result, $this->expand);
+        }
+        if ($this->rename) {
+            $result = $this->rename($result, $this->rename);
         }
         return $result;
     }
@@ -136,7 +160,7 @@ class Base extends Object
     /**
      * Renames or deleted values of array
      */
-    protected function modify(&$array, $rules)
+    protected function rename($array, $rules)
     {
         foreach ($array as $key => $value) {
             foreach ($rules as $rKey => $rValue) {
