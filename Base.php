@@ -147,6 +147,24 @@ class Base extends Object
         return $result;
     }
 
+	/**
+	 * Modifies array with all and active values (merges, renames columns etc..)
+	 * @param $all
+	 * @param $active
+	 * @return mixed
+	 */
+	protected function modify($all, $active)
+	{
+		$result = $this->merge($all, $active, $this->on);
+		if ($this->expand) {
+			$result = $this->expand($result, $this->expand);
+		}
+		if ($this->rename) {
+			$result = $this->rename($result, $this->rename);
+		}
+		return $result;
+	}
+
     /**
      * Merges two arrays using specified values
      * @param $array1

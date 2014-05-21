@@ -55,4 +55,5 @@ class SphinxRange extends Base
         }
         return $query;
     }
+
 }
