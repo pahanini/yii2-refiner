@@ -1,19 +1,19 @@
 {
-	"name": "pahanini/yii2-refiner",
-	"description": "Helps to add additional where params to query (refine query)",
-	"keywords": ["yii2", "facet search", "refine search"],
-	"homepage": "https://github.com/pahanini/yii2-refiner",
-	"type": "yii2-extension",
-	"license": "BSD-3-Clause",
-	"authors": [
-		{
-			"name": "Pavel Tetyaev",
-			"email": "pahanini@gmail.com"
-		}
-	],
-	"autoload": {
-		"psr-4": {
-			"pahanini\\refiner\\": ""
-		}
-	}
+    "name": "pahanini/yii2-refiner",
+    "description": "Helps to add additional where params to query (refine query)",
+    "keywords": ["yii2", "facet search", "refine search"],
+    "homepage": "https://github.com/pahanini/yii2-refiner",
+    "type": "yii2-extension",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Pavel Tetyaev",
+            "email": "pahanini@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "pahanini\\refiner\\": ""
+        }
+    }
 }

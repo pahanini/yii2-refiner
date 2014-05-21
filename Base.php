@@ -111,20 +111,32 @@ class Base extends Object
     {
         $all = [];
         if (is_callable($this->all)) {
-            $all = call_user_func($this->all, clone $query)->asArray()->all();
+            $tmp = clone $query;
+            $all = call_user_func($this->all, $tmp)->asArray()->all();
         }
         $active = [];
         if (is_callable($this->active)) {
-            $query = clone $query;
+            $tmp = clone $query;
             foreach ($this->set->getRefiners() as $refiner) {
                 if ($refiner === $this) {
                     continue;
                 }
-                $refiner->applyTo($query);
+                $refiner->applyTo($tmp);
 
             }
-            $active = call_user_func($this->active, $query)->asArray()->all();
+            $active = call_user_func($this->active, $tmp)->asArray()->all();
         }
+        return $this->modify($all, $active);
+    }
+
+    /**
+     * Modifies array with all and active values (merges, renames columns etc..)
+     * @param $all
+     * @param $active
+     * @return mixed
+     */
+    protected function modify($all, $active)
+    {
         $result = $this->merge($all, $active, $this->on);
         if ($this->expand) {
             $result = $this->expand($result, $this->expand);
@@ -147,6 +159,9 @@ class Base extends Object
         list($on1, $on2) = each($on);
         $array2 = \yii\helpers\ArrayHelper::index($array2, $on2);
         foreach ($array1 as $k1 => $v1) {
+            if (!array_key_exists($on1, $v1)) {
+                continue;
+            }
             $k2 = $v1[$on1];
             if (isset($array2[$k2])) {
                 $v2 = $array2[$k2];

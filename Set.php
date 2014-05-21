@@ -84,11 +84,14 @@ class Set extends Object
         $result = [];
         foreach ($this->getRefiners() as $key => $refiner) {
             $result[$key] = $refiner->getValue(clone $this->_save);
-
         }
         return $result;
     }
 
+    /**
+     * Sets refiners
+     * @param $config
+     */
     public function setRefiners($config)
     {
         $this->_refiners = $config;

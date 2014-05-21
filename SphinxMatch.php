@@ -9,22 +9,22 @@ use Yii;
  */
 class SphinxMatch extends Base
 {
-	private $_params;
+    private $_params;
 
-	public function init()
-	{
-		parent::init();
-		$this->refine = [$this, 'refine'];
-	}
+    public function init()
+    {
+        parent::init();
+        $this->refine = [$this, 'refine'];
+    }
 
-	public function refine($query, $params)
-	{
-		$this->_params = $params;
-		return $query->match($params);
-	}
+    public function refine($query, $params)
+    {
+        $this->_params = $params;
+        return $query->match($params);
+    }
 
-	public function getValue()
-	{
-		return $this->_params;
-	}
+    public function getValue()
+    {
+        return $this->_params;
+    }
 }

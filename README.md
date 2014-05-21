@@ -41,7 +41,10 @@ public function init()
 		'refiners' => [
 			// standard range
 			'price' => [
-				'class' => '\pahanini\refiner\Range',
+				'class' => '\pahanini\refiner\SphinxRange',
+			],
+			'has_discount' => [
+				'class' => '\pahanini\refiner\SphinxJsonBool',
 			],
 			// Select color values from another model
 			'color' => [
