@@ -12,10 +12,12 @@ abstract class SphinxJsonAttr extends Base
 {
     public $attrName = 'attr';
 
-    public function init()
+    public function __construct($config = [])
     {
-        parent::init();
-        $this->refine = [$this, 'refine'];
+        if (!array_key_exists('refine', $config)) {
+            $config['refine'] = [$this, 'refine'];
+        }
+        parent::__construct($config);
     }
 
     abstract public function refine(\yii\sphinx\Query $query, $params);
