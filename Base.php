@@ -36,6 +36,11 @@ class Base extends Object
     public $on = ['id' => 'id'];
 
     /**
+     * @var string
+     */
+    public $paramSeparator;
+
+    /**
      * @var string|null
      */
     public $paramType;
@@ -83,7 +88,6 @@ class Base extends Object
         return $array;
     }
 
-
     /**
      * Returns get params
      * @return array|mixed
@@ -92,6 +96,9 @@ class Base extends Object
     {
         $result = Yii::$app->request->get($this->name);
         if ($result !== null && $this->paramType) {
+            if ($this->paramSeparator) {
+                $result = explode($this->paramSeparator, $result);
+            }
             if (is_array($result)) {
                 foreach ($result as $key => $val) {
                     settype($result[$key], $this->paramType);
@@ -112,7 +119,7 @@ class Base extends Object
         $all = [];
         if (is_callable($this->all)) {
             $tmp = clone $query;
-            $all = call_user_func($this->all, $tmp)->asArray()->all();
+            $all = $this->getValueCall('all', $tmp);
         }
         $active = [];
         if (is_callable($this->active)) {
@@ -122,11 +129,28 @@ class Base extends Object
                     continue;
                 }
                 $refiner->applyTo($tmp);
-
             }
-            $active = call_user_func($this->active, $tmp)->asArray()->all();
+            $active = $this->getValueCall('active', $tmp);
         }
         return $this->modify($all, $active);
+    }
+
+    /**
+     * @param $name
+     * @param $query
+     * @return mixed
+     * @throws \Exception
+     */
+    private function getValueCall($name, $query)
+    {
+        $result = call_user_func($this->$name, $query);
+        if ($result instanceof yii\db\ActiveQueryInterface) {
+            $result = $result->asArray()->all();
+        }
+        if (!is_array($result)) {
+            throw new \Exception("Unexpected return type of {$this->name}->$name callback'");
+        }
+        return $result;
     }
 
     /**
