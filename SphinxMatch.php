@@ -23,7 +23,7 @@ class SphinxMatch extends Base
         return $query->match($params);
     }
 
-    public function getValue()
+    public function getValue($query)
     {
         return $this->_params;
     }

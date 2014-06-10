@@ -12,10 +12,10 @@ Terms
 be applied. E.g. `SELECT * FROM products WHERE balance > 0`
 
 "Refiner" is object which:
-- calculates all possible values for UI, e.g. list of possible product's categories, maximum and minimum
-  price between products (independet values).
-- analyzes http request and add additional where conditions to basic query
-- calculates active values of UI. Active values depends on values of other refiners.
+- calculates all possible (or independed) values for UI, e.g. list of possible product's categories, maximum and minimum
+  price between products (all callback).
+- analyzes http request and add additional where conditions to basic query (refine callback)
+- calculates active values of UI. Active values depends on values of other refiners (active callback).
 
 "Refiner Set" - object which contain one or more refiners an basic query.
 
