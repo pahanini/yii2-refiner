@@ -1,20 +1,22 @@
 <?php
-namespace pahanini\refiner;
+namespace pahanini\refiner\sphinx;
 
 use Yii;
 
 /**
- * SphinxMatch refiner
+ * Sphinx match refiner
  * @author Pavel Tetyaev <pahanini@gmail.com>
  */
-class SphinxMatch extends Base
+class Match extends \pahanini\refiner\common\Match
 {
     private $_params;
 
     public function init()
     {
         parent::init();
-        $this->refine = [$this, 'refine'];
+        if (!$this->refine) {
+            $this->refine = [$this, 'refine'];
+        }
     }
 
     public function refine($query, $params)
@@ -23,7 +25,7 @@ class SphinxMatch extends Base
         return $query->match($params);
     }
 
-    public function getValue($query)
+    public function getValues($query)
     {
         return $this->_params;
     }

@@ -1,17 +1,21 @@
 <?php
-namespace pahanini\refiner;
+namespace pahanini\refiner\common;
 
 use Yii;
 use yii\base\Object;
+use pahanini\refiner\Helper;
 
 /**
  * Base refiner
+ *
  * @author Pavel Tetyaev <pahanini@gmail.com>
+ *
+ * @property string columnName
  */
 class Base extends Object
 {
     /**
-     * @var Closure|callable Valid callback to all possible (independed) values.
+     * @var Closure|callable Valid callback to all possible (independent) values.
      */
     public $all;
 
@@ -25,6 +29,7 @@ class Base extends Object
      */
     public $expand;
 
+
     /**
      * @var string Name of refiner
      */
@@ -36,7 +41,12 @@ class Base extends Object
     public $on = ['id' => 'id'];
 
     /**
-     * @var string
+     * @var bool if true param values converted to array
+     */
+    public $paramToArray = false;
+
+    /**
+     * @var string if  not null param value converted to array using this param as separator
      */
     public $paramSeparator;
 
@@ -61,6 +71,11 @@ class Base extends Object
     public $set;
 
     /**
+     * @var string Name of column in database. If not set matches with name.
+     */
+    public $_columnName;
+
+    /**
      * @param \yii\db\Query $query query to apply filters
      * @return array
      */
@@ -73,32 +88,29 @@ class Base extends Object
     }
 
     /**
-     * Renames or deleted values of array
+     * @return string
      */
-    protected function expand($array, $rules)
+    public function getColumnName()
     {
-        foreach ($array as $key => $value) {
-            foreach ($rules as $rule) {
-                if (array_key_exists($rule, $value) && is_array($value[$rule])) {
-                    $array[$key] = array_merge($array[$key], $value[$rule]);
-                    unset($array[$key][$rule]);
-                }
-            }
-        }
-        return $array;
+        return isset($this->_columnName) ? $this->_columnName : $this->name;
     }
 
     /**
-     * Returns get params
-     * @return array|mixed
+     * Returns get param associated with refiner
+     * @return mixed
      */
     public function getParams()
     {
-        $result = Yii::$app->request->get($this->name);
-        if ($result !== null && $this->paramType) {
-            if ($this->paramSeparator) {
-                $result = explode($this->paramSeparator, $result);
-            }
+        if (($result = Yii::$app->request->get($this->name)) === null) {
+            return $result;
+        };
+        if ($this->paramSeparator && is_array($result)) {
+            $result = explode($this->paramSeparator, $result);
+        }
+        if ($this->paramToArray && !is_array($result)) {
+            $result = [$result];
+        }
+        if ($this->paramType) {
             if (is_array($result)) {
                 foreach ($result as $key => $val) {
                     settype($result[$key], $this->paramType);
@@ -111,11 +123,11 @@ class Base extends Object
     }
 
     /**
-     * @param $query
      * @return array of values for UI
      */
-    public function getValue($query)
+    public function getValues()
     {
+        $query = $this->set->getBaseQueryOrigin();
         $all = [];
         if (is_callable($this->all)) {
             $tmp = clone $query;
@@ -161,56 +173,21 @@ class Base extends Object
      */
     protected function modify($all, $active)
     {
-        $result = $this->merge($all, $active, $this->on);
+        $result = Helper::merge($all, $active, $this->on);
         if ($this->expand) {
-            $result = $this->expand($result, $this->expand);
+            $result = Helper::expand($result, $this->expand);
         }
         if ($this->rename) {
-            $result = $this->rename($result, $this->rename);
+            $result = Helper::rename($result, $this->rename);
         }
         return $result;
     }
 
     /**
-     * Merges two arrays using specified values
-     * @param $array1
-     * @param $array2
-     * @param $on
-     * @return mixed
+     * @param $value
      */
-    protected function merge($array1, $array2, $on)
+    public function setColumnName($value)
     {
-        list($on1, $on2) = each($on);
-        $array2 = \yii\helpers\ArrayHelper::index($array2, $on2);
-        foreach ($array1 as $k1 => $v1) {
-            if (!array_key_exists($on1, $v1)) {
-                continue;
-            }
-            $k2 = $v1[$on1];
-            if (isset($array2[$k2])) {
-                $v2 = $array2[$k2];
-                unset($v2[$on2]);
-                $array1[$k1] = array_merge($v1, $v2);
-            }
-        }
-        return $array1;
-    }
-
-    /**
-     * Renames or deleted values of array
-     */
-    protected function rename($array, $rules)
-    {
-        foreach ($array as $key => $value) {
-            foreach ($rules as $rKey => $rValue) {
-                if (array_key_exists($rKey, $value)) {
-                    if ($rValue !== false) {
-                        $array[$key][$rValue] = $value[$rKey];
-                    }
-                    unset($array[$key][$rKey]);
-                }
-            }
-        }
-        return $array;
+        $this->_columnName = $value;
     }
 } 

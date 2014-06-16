@@ -14,14 +14,29 @@ use yii\db\QueryInterface;
 class Set extends Object
 {
     /**
+     * @var bool whether refiner should return active values by default
+     */
+    public $defaultReturnActiveValues = true;
+
+    /**
+     * @var bool whether refiner should return all values by default
+     */
+    public $defaultReturnAllValues = true;
+
+    /**
      * @var string Name of default refiner class
      */
-    public $defaultRefinerClass = '\pahanini\refiner\Base';
+    public $defaultRefinerClass = '\pahanini\refiner\common\Base';
 
     /**
      * @var null|QueryInterface
      */
-    private $_query;
+    private $_baseQuery;
+
+    /**
+     * @var null|QueryInterface
+     */
+    private $_baseQueryOrigin;
 
     /**
      * @var array
@@ -34,32 +49,65 @@ class Set extends Object
     private $_refiners;
 
     /**
-     * @var null|QueryInterface
+     * @param $baseQuery
+     * @return yii\db\QueryInterface
      */
-    private $_save;
-
+    public function applyTo($baseQuery)
+    {
+        $this->setBaseQuery($baseQuery);
+        return $query = $this->getRefinedQuery();
+    }
 
     /**
-     * Refines base query
-     * @throws InvalidConfigException
+     * @return yii\db\QueryInterface
      */
-    public function apply()
+    public function getBaseQuery()
     {
-        if (!$this->_query) {
+        return $this->_baseQuery;
+    }
+
+    /**
+     * @return null|QueryInterface
+     */
+    public function getBaseQueryOrigin()
+    {
+        return clone $this->_baseQueryOrigin;
+    }
+
+    /**
+     * Refines base query and return result
+     * @throws \Exception
+     * @return yii\db\QueryInterface
+     */
+    public function getRefinedQuery()
+    {
+        if (!$query = $this->getBaseQuery()) {
             throw new \Exception("Query must be set before call apply method");
         }
         foreach ($this->getRefiners() as $refiner) {
-            $refiner->applyTo($this->_query);
+            $refiner->applyTo($query);
         }
-        return $this;
+        return $query;
     }
 
-    public function applyTo($query)
+    /**
+     * @param $name
+     * @return pahanini\refiner\Base
+     * @throws \Exception
+     */
+    public function getRefiner($name)
     {
-        $this->setQuery($query);
-        return $this->apply();
+        $refiners = $this->getRefiners();
+        if (!isset($refiners[$name])) {
+            throw new \Exception("Invalid refiner name $name");
+        }
+        return $refiners[$name];
     }
 
+
+    /**
+     * @return array Refiners instances
+     */
     public function getRefiners()
     {
         if (!$this->_refinerInstances) {
@@ -79,11 +127,14 @@ class Set extends Object
         return $this->_refinerInstances;
     }
 
-    public function getValues()
+    /**
+     * @return array Refiners values
+     */
+    public function getRefinerValues()
     {
         $result = [];
         foreach ($this->getRefiners() as $key => $refiner) {
-            $result[$key] = $refiner->getValue(clone $this->_save);
+            $result[$key] = $refiner->getValues();
         }
         return $result;
     }
@@ -100,10 +151,10 @@ class Set extends Object
     /**
      * @param $query
      */
-    public function setQuery(QueryInterface $query)
+    public function setBaseQuery(QueryInterface $query)
     {
-        $this->_query = $query;
-        $this->_save = clone $query;
-        $this->_save->with = null;
+        $this->_baseQuery = $query;
+        $this->_baseQueryOrigin = clone $query;
+        $this->_baseQueryOrigin->with = null;
     }
 }

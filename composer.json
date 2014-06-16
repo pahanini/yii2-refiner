@@ -1,9 +1,10 @@
 {
     "name": "pahanini/yii2-refiner",
-    "description": "Helps to add additional where params to query (refine query)",
+    "description": "Helps to add additional where params to active query (refine query)",
     "keywords": ["yii2", "facet search", "refine search"],
     "homepage": "https://github.com/pahanini/yii2-refiner",
     "type": "yii2-extension",
+    "minimum-stability": "dev",
     "license": "BSD-3-Clause",
     "authors": [
         {
