@@ -14,7 +14,7 @@ class Serializer extends \yii\rest\Serializer
     {
         $result = parent::serialize($data);
         if ($data instanceof DataProvider) {
-            $result[$this->node] = $data->refinerSet->getValues();
+            $result[$this->node] = $data->refinerSet->getRefinerValues();
         }
         return $result;
     }
