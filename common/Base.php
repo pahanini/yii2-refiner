@@ -71,6 +71,11 @@ class Base extends Object
     public $set;
 
     /**
+     * @var string Additional where clause to add to 'all' and 'active' queries
+     */
+    public $valueFilter;
+
+    /**
      * @var string Name of column in database. If not set matches with name.
      */
     public $_columnName;
@@ -128,6 +133,9 @@ class Base extends Object
     public function getValues()
     {
         $query = $this->set->getBaseQueryOrigin();
+        if ($this->valueFilter) {
+            $query->andWhere($this->valueFilter);
+        }
         $all = [];
         if (is_callable($this->all)) {
             $tmp = clone $query;
