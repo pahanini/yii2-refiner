@@ -9,8 +9,6 @@ use Yii;
  */
 class Match extends \pahanini\refiner\common\Match
 {
-    private $_params;
-
     public function init()
     {
         parent::init();
@@ -21,12 +19,7 @@ class Match extends \pahanini\refiner\common\Match
 
     public function refine($query, $params)
     {
-        $this->_params = $params;
-        return $query->match($params);
-    }
-
-    public function getValues($query)
-    {
-        return $this->_params;
+        $query->match($params);
+        return parent::refine($query, $params);
     }
 }

@@ -22,6 +22,6 @@ class Match extends \pahanini\refiner\common\Match
             $bind[$name] = $val . '%';
         }
         $query->andWhere($where, $bind);
-        return $query;
+        return parent::refine($query, $params);
     }
 }
