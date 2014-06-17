@@ -5,7 +5,7 @@ namespace pahanini\refiner\sphinx;
  * Sphinx Range refiner
  * @author Pavel Tetyaev <pahanini@gmail.com>
  */
-class SphinxRange extends \pahanini\refiner\common\Range
+class Range extends \pahanini\refiner\common\Range
 {
     public function init()
     {
