@@ -11,28 +11,21 @@ use yii\db\Expression;
  */
 class Checkbox extends Base
 {
-    public $on = ['_id' => '_id'];
+    public $paramToArray = false;
 
-    public $paramToArray = true;
-
-    public $paramType = 'int';
-
-    public $rename = ['_id' => 'id'];
+    public $paramType = 'bool';
 
     public function init()
     {
         parent::init();
-        if (!$this->refine) {
+        if ($this->refine === null) {
             $this->refine = [$this, 'refine'];
         }
-        if (!$this->all) {
+        if ($this->all === null) {
             $this->all = [$this, 'all'];
         }
-        if (!$this->active) {
+        if ($this->active === null) {
             $this->active = [$this, 'active'];
-        }
-        if (!$this->on) {
-            $this->on = ['_id' => '_id'];
         }
     }
 
@@ -62,7 +55,7 @@ class Checkbox extends Base
 
     public function refine($query, $params)
     {
-        $query->andWhere(new Expression("$this->columnName IN (" . join(',', $params) . ")"));
+        $query->andWhere($this->valueFilter);
         return $query;
     }
 }
