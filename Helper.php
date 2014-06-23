@@ -10,7 +10,7 @@ class Helper
      * @param array $columns list of columns to expand
      * @return array;
      */
-    public function expand($array, $columns)
+    public static function expand($array, $columns)
     {
         foreach ($array as $key => $value) {
             foreach ($columns as $rule) {
@@ -32,7 +32,7 @@ class Helper
      * @param array $on
      * @return array
      */
-    public function merge($array1, $array2, $on)
+    public static function merge($array1, $array2, $on)
     {
         list($on1, $on2) = each($on);
         $array2 = \yii\helpers\ArrayHelper::index($array2, $on2);
