@@ -110,17 +110,20 @@ class Set extends Object
      */
     public function getRefiners()
     {
-        if (!$this->_refinerInstances) {
-            foreach ($this->_refiners as $key => $config) {
-                if (!($config instanceof Base)) {
-                    if (!isset($config['class'])) {
-                        $config['class'] = $this->defaultRefinerClass;
+        if ($this->_refinerInstances === null) {
+            $this->_refinerInstances = [];
+            if (is_array($this->_refiners)) {
+                foreach ($this->_refiners as $key => $config) {
+                    if (!($config instanceof Base)) {
+                        if (!isset($config['class'])) {
+                            $config['class'] = $this->defaultRefinerClass;
+                        }
+                        if (!isset($config['name'])) {
+                            $config['name'] = $key;
+                        }
+                        $config['set'] = $this;
+                        $this->_refinerInstances[$key] = Yii::createObject($config);
                     }
-                    if (!isset($config['name'])) {
-                        $config['name'] = $key;
-                    }
-                    $config['set'] = $this;
-                    $this->_refinerInstances[$key] = Yii::createObject($config);
                 }
             }
         }

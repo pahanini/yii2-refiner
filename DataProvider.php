@@ -12,7 +12,9 @@ use  \yii\data\ActiveDataProvider;
  */
 class DataProvider extends ActiveDataProvider
 {
-    private $_refinerSet;
+    private $_refinerSet = [
+        'class' => 'pahanini\refiner\Set'
+    ];
 
     public function getRefinerSet()
     {
