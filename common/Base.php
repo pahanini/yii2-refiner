@@ -109,7 +109,7 @@ class Base extends Object
         if (($result = Yii::$app->request->get($this->name)) === null) {
             return $result;
         };
-        if ($this->paramSeparator && is_array($result)) {
+        if ($this->paramSeparator && !is_array($result)) {
             $result = explode($this->paramSeparator, $result);
         }
         if ($this->paramToArray && !is_array($result)) {
