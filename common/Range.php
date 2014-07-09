@@ -11,6 +11,7 @@ use yii\db\Expression;
  */
 class Range extends Base
 {
+    public $paramSeparator = ',';
     public $paramType = 'float';
 
     public function init()
@@ -61,11 +62,11 @@ class Range extends Base
 
     public function refine($query, $params)
     {
-        if (isset($params['min'])) {
-            $query->andWhere("$this->columnName >= :{$this->columnName}Min", [":{$this->columnName}Min" => $params['min']]);
+        if (isset($params[0])) {
+            $query->andWhere("$this->columnName >= :{$this->columnName}Min", [":{$this->columnName}Min" => $params[0]]);
         }
-        if (isset($params['max'])) {
-            $query->andWhere("$this->columnName <= :{$this->columnName}Max", [":{$this->columnName}Max" => $params['max']]);
+        if (isset($params[1])) {
+            $query->andWhere("$this->columnName <= :{$this->columnName}Max", [":{$this->columnName}Max" => $params[1]]);
         }
         return $query;
     }
