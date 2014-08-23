@@ -14,6 +14,21 @@ use yii\db\QueryInterface;
 class Set extends Object
 {
     /**
+     * @var Cache|string the cache object or the ID of the cache application component
+     * that is used for query caching.
+     */
+    public $cache = 'cache';
+
+    /**
+     * @var integer the default number of seconds that query results can remain valid in cache.
+     * Use 0 to indicate that the cached data will never expire.
+     * Defaults to 3600, meaning 3600 seconds, or one hour. Use 0 to indicate that the cached data will never expire.
+     * The value of this property will be used when [[cache()]] is called without a cache duration.
+     * @see cache()
+     */
+    public $cacheDuration = 3600;
+
+    /**
      * @var bool whether refiner should return active values by default
      */
     public $defaultReturnActiveValues = true;
@@ -27,6 +42,21 @@ class Set extends Object
      * @var string Name of default refiner class
      */
     public $defaultRefinerClass = '\pahanini\refiner\common\Base';
+
+    /**
+     * @var boolean whether to enable results caching.
+     */
+    public $enableCache = true;
+
+    /**
+     * @var int
+     */
+    private $_cacheDuration;
+
+    /**
+     * @var \yii\caching\Dependency
+     */
+    private $_cacheDependency;
 
     /**
      * @var null|QueryInterface
@@ -59,6 +89,21 @@ class Set extends Object
     }
 
     /**
+     * Enables query cache for this refiners
+     * @param integer $duration the number of seconds that query result of this command can remain valid in the cache.
+     * If this is not set, the value of [[Connection::queryCacheDuration]] will be used instead.
+     * Use 0 to indicate that the cached data will never expire.
+     * @param \yii\caching\Dependency $dependency the cache dependency associated with the cached query result.
+     * @return static the command object itself
+     */
+    public function cache($duration = null, $dependency = null)
+    {
+        $this->_cacheDuration = $duration === null ? $this->defaultCacheDuration : $duration;
+        $this->_cacheDependency = $dependency;
+        return $this;
+    }
+
+    /**
      * @return yii\db\QueryInterface
      */
     public function getBaseQuery()
@@ -67,11 +112,32 @@ class Set extends Object
     }
 
     /**
-     * @return null|QueryInterface
+     * @return \yii\db\QueryInterface
      */
     public function getBaseQueryOrigin()
     {
         return clone $this->_baseQueryOrigin;
+    }
+
+    /**
+     * Returns the current refiners cache information.
+     * This method is used internally by refiners
+     * @return array the current query cache information, or null if query cache is not enabled.
+     * @internal
+     */
+    public function getCacheInfo()
+    {
+        if ($this->cache) {
+            if (is_string($this->cache) && Yii::$app) {
+                $cache = Yii::$app->get($this->cache, false);
+            } else {
+                $cache = $this->cache;
+            }
+            if ($cache instanceof \yii\caching\Cache) {
+                return [$cache, $this->_cacheDuration, $this->_cacheDependency];
+            }
+        }
+        return null;
     }
 
     /**
@@ -135,9 +201,28 @@ class Set extends Object
      */
     public function getRefinerValues()
     {
+        if ($this->enableCache && ($info = $this->getCacheInfo())) {
+            /** @var \yii\db\Command $command */
+            /** @var \yii\caching\Cache  $info[0] */
+            $command = $this->getBaseQueryOrigin()->createCommand();
+            $cacheKey = array_merge(array_keys($this->_refiners), [
+                __CLASS__,
+                $command->getRawSql(),
+                $command->db->dsn,
+                $command->db->username,
+            ]);
+            if (($result = $info[0]->get($cacheKey)) !== false) {
+                Yii::trace('Refiners values served from cache', 'pahanini\refiner\Set::getRefinersValues');
+                return $result;
+            }
+        }
         $result = [];
         foreach ($this->getRefiners() as $key => $refiner) {
             $result[$key] = $refiner->getValues();
+        }
+        if (isset($info, $cacheKey)) {
+            $info[0]->set($cacheKey, $result, $info[1], $info[2]);
+            Yii::trace('Saved refiners values in cache', 'pahanini\refiner\Set::getRefinersValues');
         }
         return $result;
     }
