@@ -93,6 +93,18 @@ class Base extends Object
     }
 
     /**
+     * Returns the current refiner cache information
+     *
+     * @param \yii\db\ActiveQuery $query
+     * @return mixed
+     */
+    public function getCacheInfo($query = null)
+    {
+        return $this->set->getCacheInfo($query);
+    }
+
+
+    /**
      * @return string
      */
     public function getColumnName()
@@ -133,16 +145,31 @@ class Base extends Object
     public function getValues()
     {
         $query = $this->set->getBaseQueryOrigin();
-        if ($this->valueFilter) {
-            $query->andWhere($this->valueFilter);
-        }
         $all = [];
         if (is_callable($this->all)) {
-            $tmp = clone $query;
-            $all = $this->getValueCall('all', $tmp);
+            $all = false;
+            if ($this->set->enableCache && ($info = $this->getCacheInfo($query))) {
+                list($cache, $duration, $dependency, $cacheKey) = $info;
+                $cacheKey[] = get_class($this) . $this->name;
+                if (($all = $cache->get($cacheKey)) !== false) {
+                    Yii::trace('$this->name refiner all values served from cache', 'pahanini\refiner\common\Base::getValues');
+                }
+            }
+            if ($all === false) {
+                if ($this->valueFilter) {
+                    $query->andWhere($this->valueFilter);
+                }
+                $tmp = clone $query;
+                $all = $this->getValueCall('all', $tmp);
+                if (isset($info)) {
+                    $cache->set($cacheKey, $all, $duration, $dependency);
+                    Yii::trace('$this->name refiners all values saved in cache', 'pahanini\refiner\common\Base::getValues');
+                }
+            }
         }
         $active = [];
         if (is_callable($this->active)) {
+            $active = false;
             $tmp = clone $query;
             foreach ($this->set->getRefiners() as $refiner) {
                 if ($refiner === $this) {
@@ -150,7 +177,20 @@ class Base extends Object
                 }
                 $refiner->applyTo($tmp);
             }
-            $active = $this->getValueCall('active', $tmp);
+            if ($this->set->enableCache && ($info = $this->getCacheInfo($tmp))) {
+                list($cache, $duration, $dependency, $cacheKey) = $info;
+                $cacheKey[] = get_class($this) . $this->name;
+                if (($active = $cache->get($cacheKey)) !== false) {
+                    Yii::trace('$this->name refiner active values served from cache', 'pahanini\refiner\common\Base::getValues');
+                }
+            }
+            if ($active === false) {
+                $active = $this->getValueCall('active', $tmp);
+                if (isset($info)) {
+                    $cache->set($cacheKey, $active, $duration, $dependency);
+                    Yii::trace('$this->name refiners active values saved in cache', 'pahanini\refiner\common\Base::getValues');
+                }
+            }
         }
         return $this->modify($all, $active);
     }
