@@ -49,7 +49,7 @@ class Count extends Base
     public function query($query, $name)
     {
         return $query
-            ->select([new Expression($this->columnName . ' as _id'), "COUNT(*) as $name"])
+            ->select([new Expression($this->columnName . ' as _id'), "COUNT(*) as `$name`"])
             ->andWhere(new Expression("$this->columnName IS NOT NULL"))
             ->groupBy([new Expression($this->columnName)]);
     }
