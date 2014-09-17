@@ -1,5 +1,6 @@
 <?php
 namespace pahanini\refiner;
+use Yii;
 
 /**
  * Serializer
@@ -8,15 +9,36 @@ namespace pahanini\refiner;
  */
 class Serializer extends \yii\rest\Serializer
 {
-    public $node = 'refiners';
+    /**
+     * Serialized response node to add refiner value. If this set to null no data will be added
+     *
+     * @var null|string
+     */
+    public $refinerValuesNodeName = 'refiners';
 
-    public function serialize($data)
+    /**
+     * @var string
+     */
+    public $refinerValuesNodeParam = 'refiners';
+
+    /**
+     * @return bool
+     */
+    private function isRefinerValuesNodeRequired()
     {
-        $result = parent::serialize($data);
-        if ($data instanceof DataProvider) {
-            $result[$this->node] = $data->refinerSet->getRefinerValues();
+        return $this->refinerValuesNodeName && ($this->refinerValuesNodeParam === null || Yii::$app->getRequest()->get(
+                $this->refinerValuesNodeParam
+            ));
+    }
+
+    protected  function serializeDataProvider($dataProvider)
+    {
+        $result = parent::serializeDataProvider($dataProvider);
+        if ($this->isRefinerValuesNodeRequired()) {
+            $result[$this->refinerValuesNodeName] = $dataProvider->refinerSet->getRefinerValues();
         }
         return $result;
     }
 
-} 
+}
+
